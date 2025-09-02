@@ -1,0 +1,19 @@
+@startuml
+
+actor User
+participant Orchestrator
+participant SpecialistModel
+
+User -> Orchestrator: Runs Script & Enters Role/Query
+Orchestrator -> Orchestrator: Analyze Request
+
+alt Specific Report
+    Orchestrator -> SpecialistModel: Send Technical Prompt
+    SpecialistModel --> Orchestrator: Raw, Unformatted Analysis
+    Orchestrator -> Orchestrator: Translate & Format Final Report
+else General Question
+    Orchestrator -> Orchestrator: Answer Using RAG Pipeline
+end
+
+Orchestrator --> User: Final Report (Doctor/Patient tailored)
+@enduml

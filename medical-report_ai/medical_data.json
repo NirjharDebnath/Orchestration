@@ -1,0 +1,19 @@
+{
+  "patient_id": "P-78901",
+  "imaging_type": "Brain MRI with Contrast",
+  "findings": [
+    {
+      "finding_type": "Mass",
+      "location": "Left Frontal Lobe",
+      "size_mm": [35, 30, 42],
+      "characteristics": "Irregularly shaped, ring-enhancing lesion with central necrosis.",
+      "associated_edema": "Significant vasogenic edema in the surrounding white matter.",
+      "mass_effect": "Effacement of the adjacent cortical sulci and mild midline shift of 4mm to the right.",
+      "confidence_score": 0.95
+    }
+  ],
+  "image_metadata": {
+    "sequence": "T1-weighted post-contrast",
+    "slice_thickness_mm": 5
+  }
+}

@@ -1,0 +1,101 @@
+@startuml System_Design
+title Detailed Medical Reporting AI Workflow
+caption A two-phase process for report generation and conversational Q&A
+
+' GLOBAL DARK THEME SETTINGS
+skinparam backgroundColor #1e1e1e
+skinparam activity {
+  BackgroundColor #FFFFFFFF
+  BorderColor #888
+  FontColor #000000FF
+  FontSize 11
+}
+skinparam note {
+  BackgroundColor #FFFFFFFF
+  BorderColor #777
+  FontColor #000000FF
+  FontSize 10
+}
+skinparam arrow {
+  Color #cccccc
+  Thickness 1
+}
+skinparam swimlane {
+  BorderColor #FFFFFFFF
+  FontColor #000000FF
+}
+skinparam defaultFontName "Segoe UI"
+skinparam padding 2
+
+' SWIMLANE FOR PHASE 1
+|#D0FFD2FF|Phase 1: Initial Report Generation|
+start
+
+:Receive **medical_data.json** from\nImaging Models (VGG, UNet);
+note right: This is the **starting trigger** for the entire session.
+
+:User executes the main Python script;
+
+:Script automatically triggers\nthe initial report generation process;
+
+' SWIMLANE FOR THE ORCHESTRATOR'S ROLE
+|#1565c0|Orchestrator LLM (e.g., Llama 3)|
+:1. **Formats a Technical Prompt**\n- Optimized for the Specialist Model\n- Uses data from medical_data.json;
+note left: This prompt is dense, full of jargon,\nand designed for machine-to-machine accuracy.
+
+' SWIMLANE FOR THE SPECIALIST'S ROLE
+|#F2D3FFFF|Specialist LLM (e.g., Med-Gemma)|
+:2. **Process Technical Prompt** via API Call;
+:3. Generate **Raw, Unformatted Medical Analysis**\n(e.g., detailed findings, confidence scores in JSON);
+note right: The Specialist's only job is **medical accuracy**.\nIt does not care about user-friendliness.
+
+' BACK TO THE ORCHESTRATOR
+|#1565c0|Orchestrator LLM (e.g., Llama 3)|
+:4. **Receives Raw Analysis** from Specialist;
+:5. **Translates & Formats** the raw data\ninto a final, user-friendly report\n(Tailoring tone for 'doctor' or 'patient');
+note left: This is the **synthesis step**.\nThe Orchestrator acts as a medical communicator.
+
+' BACK TO THE MAIN SCRIPT
+|#D0FFD2FF|Phase 1: Initial Report Generation|
+:Print the complete, formatted report to the terminal;
+:Store `medical_data` and raw analysis\nin a **`conversation_state`** object;
+
+' SWIMLANE FOR PHASE 2
+|#FFEDB8FF|Phase 2: Conversational Q&A Loop|
+while (User does not type 'exit') is (yes)
+  :Wait for user's follow-up question;
+  note right: The session is now **interactive and stateful**.
+
+  ' ORCHESTRATOR HANDLES THE FOLLOW-UP
+  |#B8D9FFFF|Orchestrator LLM (e.g., Llama 3)|
+  :Analyze new query **with context**\n(medical_data + chat history);
+
+  if (Query is a **clarification** on the report?) then (yes)
+    :Formulate answer using data already\nin `conversation_state`;
+    note right: No new API calls needed.\nThis is **fast and efficient**.
+
+  elseif (Query is a **related general question**?) then (yes)
+    ' SWIMLANE FOR THE RAG SYSTEM
+    |#ef6c00|RAG System|
+    :Query Vector DB (PubMed, etc.)\nfor general information;
+    |#D2E8FF|Orchestrator LLM (e.g., Llama 3)|
+    :Synthesize RAG results **with patient context**\nto provide a personalized answer;
+    note left: e.g., "For a tumor like yours,\ntreatments often include..."
+
+  else (is an **unrelated general question**)
+    ' RAG SYSTEM AGAIN
+    |#FFE5CFFF|RAG System|
+    :Query Vector DB for a standard,\ntextbook answer;
+    |#D2DAF8FF|Orchestrator LLM (e.g., Llama 3)|
+    :Format the retrieved information clearly;
+  endif
+
+  |#FFFCF3|Phase 2: Conversational Q&A Loop|
+  :Print the generated answer to the terminal;
+  :Update `conversation_state` with the\nnew question and answer;
+endwhile (no)
+
+:User typed 'exit'.\nEnd session.;
+
+stop
+@enduml
